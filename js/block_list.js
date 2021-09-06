@@ -36,13 +36,15 @@ var app = new Vue({
         },
 
         checkDataUndefined(data) { 
-            if(typeof(data["blockheight"]) == undefined && typeof(data["peer_num"]) == undefined) { 
+            console.log(data);
+            if(data["blockheight"] === undefined && data["blockMaker"] === undefined) {  
+                //console.log("undefined-------------------------------------------------------");
                 data["index"] = -1; 
-                data["blockheight"] = "-";  
-                data["peer_num"] = "-";
-                data["blockMaker"] = "-";
-                data["blocktime"] = "-";
-                data["blockhash"] = "-";
+                data["blockheight"] = "---";
+                data["peer_num"] = "---";
+                data["blockMaker"] = "---";
+                data["blocktime"] = "---";
+                data["blockhash"] = "---";
             } 
             return data;
         },
@@ -94,7 +96,7 @@ var app = new Vue({
                         data["blockhash"] = data1.head_block_id 
                         //console.log(data)    
   
-                        //data = app.checkDataUndefined(data);
+                        data = app.checkDataUndefined(data);
 
                         app.server_list.push(data);     
 
@@ -126,9 +128,20 @@ var app = new Vue({
         },
         
         isHeightError: function(h){  
-            if(h === "/" || h === undefined)
+            if(h === "/" || h === "---")
                return true;
             return false;
+        },
+
+        getHeightPrior: function(a, b){  
+            if(a.blockheight === "/" && b.blockheight === "/")
+               return a.index - b.index;
+            else if(a.blockheight === "/" && b.blockheight === "---")
+               return 1;        
+            else if(a.blockheight === "---" && b.blockheight === "/")
+               return -1;                   
+            else if(a.blockheight === "---" && b.blockheight === "---")
+               return a.index - b.index;
         },
 
         showResult: function(){  
@@ -142,7 +155,7 @@ var app = new Vue({
                         else if (app.isHeightError(a.blockheight) && b.blockheight > 0)
                             return -1;
                         else if (app.isHeightError(a.blockheight) && app.isHeightError(b.blockheight))
-                            return a.index - b.index;
+                            return app.getHeightPrior(a, b);
                              
                         var blockheight = a.blockheight - b.blockheight;
                         if (blockheight === 0)
@@ -253,7 +266,7 @@ var app = new Vue({
             var trs=t_name.getElementsByTagName("tr");
             for(var i=0;i<trs.length;i++){   
                 if (app.server_list2[i]["clr"] !== app.converRgbToArgb(255, 255, 255))           
-                    trs[i].style.background= app.server_list2[i]["clr"]; 
+                    trs[i].style.background = app.server_list2[i]["clr"]; 
             }
 
             //location.reload();
@@ -311,7 +324,8 @@ var app = new Vue({
                 "35.76.107.8",
                 "3.115.1.53",*/
                 "35.72.35.95",
-                "35.74.78.197"
+                "35.74.78.197",
+                "192.168.101.204"
              );
              for (j = 0; j < webServer.length; j++) {  
                 this.getBlockData(nLen+1+j, webServer[j]);  
