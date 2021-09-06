@@ -2,48 +2,115 @@ var app = new Vue({
     el: '#app',
     data: {
         totalNum: 1,
+        intervalData:null,    // 定时器
+        intervalUI:null,    // 定时器
         server_list: [],
         server_list2: [],
     },
     created () {
         console.log('1')
         this.getAllServer();
-        
-         this.server_list.sort((a,b)=>{
-            return a.index - b.index
-         });
          
+        // 计时器正在进行中，退出函数
+        if (this.intervalData != null) {
+            return;
+        }
+ 
+        this.intervalData = setInterval(() => {
+            //this.getAllServer(); 
+        }, 1000*40);
+    },
+    destroyed() {
+         //页面关闭时清空
+         this.clear();
     },
     methods:{
+        // 停止定时器
+        clear() {
+            clearInterval(this.intervalData); //清除计时器
+            this.intervalData = null; //设置为null
+
+            clearInterval(this.intervalUI); //清除计时器
+            this.intervalUI = null; //设置为null
+            console.log("clear ----------------------");
+        },
+
+        checkDataUndefined(data) { 
+            if(typeof(data["blockheight"]) == undefined && typeof(data["peer_num"]) == undefined) { 
+                data["index"] = -1; 
+                data["blockheight"] = "-";  
+                data["peer_num"] = "-";
+                data["blockMaker"] = "-";
+                data["blocktime"] = "-";
+                data["blockhash"] = "-";
+            } 
+            return data;
+        },
+
          getBlockData: function(index, ipServer){ 
             //console.log(ipServer)
-            console.log("server" , ipServer)
+            //console.log("server" , ipServer)
             var strUrl = "http://" + ipServer + ":8888/taf/taf_getInfo"
                 $.ajax({   
                     url: strUrl,
  
                     //data是成功返回的json串
-                    success:function(data1,status){    
+                    success:function(data1,status){  
+
+                        if(index === 10 || index === 11){
+                            var data = {};      
+                            data["clr"] = app.converRgbToArgb(255,0,0);                
+                            data["index"] = -1
+                            data["server"] = ipServer
+                            data["blockheight"] = "/"
+                            data["peer_num"] = 0
+                            data["blockMaker"] = "/"
+                            data["blocktime"] = "/"
+                            data["blockhash"] = "/"
+                            app.server_list.push(data);  
+      
+                            console.log(ipServer, app.server_list.length, app.totalNum);   
+                            app.showResult();  
+                            return;
+                        }
+
                        // console.log(data1) 
-                        var data = {};                         
+                        var data = {};    
+                        data["clr"] = app.converRgbToArgb(255, 255, 255);                                
                         data["index"] = index
                         data["server"] = ipServer
-                        data["blockheight"] = data1.head_block_num
+                        data["blockheight"] = data1.head_block_num 
+                        if(index === 0)
+                            data["blockheight"] = 5;
+                        if(index === 1)
+                            data["blockheight"] = 6;
+                        if(index === 2)
+                            data["blockheight"] = 7;
+
+
                         data["peer_num"] = 0
                         data["blockMaker"] = data1.head_block_maker
                         data["blocktime"] = data1.head_block_time
                         data["blockhash"] = data1.head_block_id 
                         //console.log(data)    
+  
+                        //data = app.checkDataUndefined(data);
+
                         app.server_list.push(data);     
 
-                        //console.log(app.server_list.length)    
-                        //app.setTextFlag(); 
+                        //console.log(app.server_list.length) 
+                        //console.log(ipServer, app.server_list.length, app.totalNum);   
                         app.showResult();                 
                     },
                     error:function(data1,status){
+
+                        if(ipServer.indexOf("204") != -1 )
+                            console.log("204 =====================================");
+
                         //alert(status);
-                        var data = {};                   
-                        data["index"] = index
+                        var data = {};      
+                        data["clr"] = app.converRgbToArgb(255,0,0);                
+                        data["index"] = -index;
                         data["server"] = ipServer
                         data["blockheight"] = "/"
                         data["peer_num"] = 0
@@ -51,37 +118,152 @@ var app = new Vue({
                         data["blocktime"] = "/"
                         data["blockhash"] = "/"
                         app.server_list.push(data);  
-                        app.showResult();                        
+  
+                        console.log(ipServer, app.server_list.length, app.totalNum);   
+                        app.showResult();                               
                     }
                 });   
         },
-    
+        
+        isHeightError: function(h){  
+            if(h === "/" || h === undefined)
+               return true;
+            return false;
+        },
+
         showResult: function(){  
             if(app.server_list.length === app.totalNum){
-                app.server_list2 = app.server_list.sort();
+                app.server_list2 = app.server_list.sort(function(a, b)
+                    {
+                        console.log(a.blockheight, b.blockheight);
+
+                        if(a.blockheight > 0 && app.isHeightError(b.blockheight))
+                            return 1;
+                        else if (app.isHeightError(a.blockheight) && b.blockheight > 0)
+                            return -1;
+                        else if (app.isHeightError(a.blockheight) && app.isHeightError(b.blockheight))
+                            return a.index - b.index;
+                             
+                        var blockheight = a.blockheight - b.blockheight;
+                        if (blockheight === 0)
+                            return a.index - b.index;
+                        else
+                            return blockheight;
+                    }
+                ); 
+                app.server_list2 = app.server_list2.sort();
+                /*
+                var dataArr = [];
+                for(var i=0;i < app.server_list2.length;i++){ 
+                    var data = {};      
+                    data["h"] = app.server_list2[i].blockheight;             
+                    data["node"] =  app.server_list2[i].server;  
+
+                    dataArr.push(data);  
+                }
+                console.log(dataArr);*/
+ 
+                // 计时器正在进行中，退出函数
+                if (app.intervalUI != null) {
+                    return;
+                }
+   
+                app.intervalUI = setInterval(() => {
+                    app.checkData(); 
+                }, 1000*1);
             }
         },
 
-        setTextFlag: function(){ 
-             var t_name = document.getElementById("tableid");
-             console.log(t_name); 
+        // rgb转int
+        converRgbToArgb: function(r,g,b){   
+             return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+        }, 
 
-             var trs=t_name.getElementsByTagName("tr");
-             for(var i=0;i<trs.length;i++){
-                var j=i+1;
-                if(j%2==0){
-                    trs[i].style.background= "#aa0000";
-                }else{
-                    trs[i].style.background="yellow";
+        isArrayContain: function(arr, val){    
+            let result = false;
+            for (var i = 0; i < arr.length; i++) {
+                if (arr[i] === val) {
+                    return i;
                 }
             }
+            return -1;
+        }, 
+           
+        getArrayMax: function(arr){    
+            let val = -1;
+            for (var i = 0; i < arr.length; i++) {
+                if (arr[i] > val) {
+                    val = arr[i];
+                }
+            }
+            return val;
+        }, 
+
+        checkData: function(){ 
+            var t_name = document.getElementById("tableid");
+            console.log(t_name); 
+
+            var trs=t_name.getElementsByTagName("tr");
+            if (app.server_list2.length !== trs.length){
+                console.log("datalist error trs-----------------------------------");
+                console.log(app.server_list2.length);
+                console.log(trs.length);
+                return;
+            }
+            clearInterval(this.intervalUI); //清除计时器
+            app.intervalUI = null;
+            app.setTextClr();
+        },
+
+        setTextClr: function(){         
+
+            var heightArr = [];
+            var heightWeight = [];
+
+            for(var i=0;i < app.server_list2.length;i++){ 
+                var h = app.server_list2[i].blockheight;
+                var index = app.isArrayContain(heightArr, h);
+                if(index < 0){
+                    heightArr.push(h);   
+                    heightWeight.push(0);
+                }
+                else
+                    heightWeight[index] = heightWeight[index] + 1;
+            }
+            console.log(heightWeight);
+            var max = app.getArrayMax(heightWeight);
+
+
+            var nClr = heightArr.length;
+            //console.log(nClr);
+            for(var i=0;i < app.server_list2.length;i++){ 
+                var h = app.server_list2[i].blockheight;
+                var index = app.isArrayContain(heightArr, h);
+                
+                if(max !== heightWeight[index]){          
+                     var clr = (nClr - index)*1.0/nClr; 
+                     // console.log(clr);
+                    app.server_list2[i]["clr"] = app.converRgbToArgb(parseInt(255*clr),0,0);  
+                } 
+                else
+                    app.server_list2[i]["clr"] = app.converRgbToArgb(255, 255, 255);  
+            }
+
+            var t_name = document.getElementById("tableid"); 
+            var trs=t_name.getElementsByTagName("tr");
+            for(var i=0;i<trs.length;i++){   
+                if (app.server_list2[i]["clr"] !== app.converRgbToArgb(255, 255, 255))           
+                    trs[i].style.background= app.server_list2[i]["clr"]; 
+            }
+
+            //location.reload();
             return;
 
 
              $("table > tbody > tr").each(function () {
                  console.log($(this).find('td').eq(0).text() + " " + $(this).find('td').eq(1).text() );
              });
-                         // inner web
+                         
              
             console.log("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", app.server_list.length); 
                   
@@ -100,50 +282,17 @@ var app = new Vue({
                             //console.log(trs[j].outerHTML);
                         } 
                     }
-                }
-  
-     // 
-
-                /*
-
-                 for(var i=0; i< t_name.tBodies.length;  i++)  {
-                    console.log(t_name.tBodies[i].tagName); 
-                    var c = t_name.tBodies[i].children;
-                    console.log(c.length);
-                 }
-
-                    for(var i=0;i<=t_len.length;i++){
-                        //偶数行时执行
-                        if(i%2 == 0){
-                            t_len[i].style.backgroundColor="#ffcccc";
-                         //添加鼠标经过事件
-                            t_len[i].onmouseover = function(){
-                                this.style.backgroundColor="#ccffff"
-                            }
-                            //添加鼠标离开事件
-                            t_len[i].onmouseout = function(){
-                                this.style.backgroundColor="#ffcccc"               
-                            }
-                        }
-                        else{
-                            t_len[i].style.backgroundColor="#ffffcc";
-             
-                            t_len[i].onmouseover = function(){
-                                this.style.backgroundColor="#ccffff"
-                            }
-                            t_len[i].onmouseout = function(){
-                                this.style.backgroundColor="#ffffcc"
-                        }
-                    }
-                }
-                */ 
+                }    
               
         },
         getAllServer: function(){ 
+             this.server_list = []; 
+             this.server_list2 = [];  
+             this.totalNum = -1;
              // inner web
              var ipServer = "192.168.101.";
              var nStart = 101;
-             var nLen = 14;
+             var nLen = 140;
              for (i=0; i < nLen; i++) { 
                 var nCurStart = nStart + i;
                 var strIpCur = ipServer + nCurStart.toString();
@@ -182,8 +331,7 @@ var app = new Vue({
             }
         },
 
-        search_block(){
-             app.setTextFlag();  
+        search_block(){ 
         }
     }
 });
