@@ -17,8 +17,8 @@ var app = new Vue({
         }
  
         this.intervalData = setInterval(() => {
-            //this.getAllServer(); 
-        }, 1000*40);
+            this.getAllServer(); 
+        }, 1000*90);
     },
     destroyed() {
          //页面关闭时清空
@@ -36,7 +36,7 @@ var app = new Vue({
         },
 
         checkDataUndefined(data) { 
-            console.log(data);
+            //console.log(data);
             if(data["blockheight"] === undefined && data["blockMaker"] === undefined) {  
                 //console.log("undefined-------------------------------------------------------");
                 data["index"] = -1; 
@@ -82,13 +82,14 @@ var app = new Vue({
                         data["index"] = index
                         data["server"] = ipServer
                         data["blockheight"] = data1.head_block_num 
+                        /*
                         if(index === 0)
                             data["blockheight"] = 5;
                         if(index === 1)
                             data["blockheight"] = 6;
                         if(index === 2)
                             data["blockheight"] = 7;
-
+                        */
 
                         data["peer_num"] = 0
                         data["blockMaker"] = data1.head_block_maker
@@ -148,7 +149,7 @@ var app = new Vue({
             if(app.server_list.length === app.totalNum){
                 app.server_list2 = app.server_list.sort(function(a, b)
                     {
-                        console.log(a.blockheight, b.blockheight);
+                        //console.log(a.blockheight, b.blockheight);
 
                         if(a.blockheight > 0 && app.isHeightError(b.blockheight))
                             return 1;
@@ -324,8 +325,7 @@ var app = new Vue({
                 "35.76.107.8",
                 "3.115.1.53",*/
                 "35.72.35.95",
-                "35.74.78.197",
-                "192.168.101.204"
+                "35.74.78.197" 
              );
              for (j = 0; j < webServer.length; j++) {  
                 this.getBlockData(nLen+1+j, webServer[j]);  
