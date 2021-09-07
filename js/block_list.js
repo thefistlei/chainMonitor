@@ -18,7 +18,7 @@ var app = new Vue({
  
         this.intervalData = setInterval(() => {
             this.getAllServer(); 
-        }, 1000*90);
+        }, 1000*60);
     },
     destroyed() {
          //页面关闭时清空
@@ -58,7 +58,7 @@ var app = new Vue({
  
                     //data是成功返回的json串
                     success:function(data1,status){  
-
+                        /*
                         if(index === 10 || index === 11){
                             var data = {};      
                             data["clr"] = app.converRgbToArgb(255,0,0);                
@@ -74,7 +74,7 @@ var app = new Vue({
                             console.log(ipServer, app.server_list.length, app.totalNum);   
                             app.showResult();  
                             return;
-                        }
+                        }*/
 
                        // console.log(data1) 
                         var data = {};    
@@ -314,7 +314,7 @@ var app = new Vue({
              }              
 
              var webServer = new Array(
-                /*"18.176.224.246",
+                "18.176.224.246",
                 "18.183.203.208", 
                 "35.74.253.51", 
                 "3.112.63.128", 
@@ -323,7 +323,11 @@ var app = new Vue({
                 "13.230.34.236", 
                 "18.181.233.85", 
                 "35.76.107.8",
-                "3.115.1.53",*/
+                "3.115.1.53",
+                "121.41.200.60",
+                "121.41.199.36",
+                "121.41.199.39",
+                "121.41.199.60",
                 "35.72.35.95",
                 "35.74.78.197" 
              );
