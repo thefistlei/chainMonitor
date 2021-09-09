@@ -245,6 +245,7 @@ var app = new Vue({
                     heightWeight[index] = heightWeight[index] + 1;
             }
             console.log(heightWeight);
+            console.log(heightArr);
             var max = app.getArrayMax(heightWeight);
 
 
@@ -254,10 +255,19 @@ var app = new Vue({
                 var h = app.server_list2[i].blockheight;
                 var index = app.isArrayContain(heightArr, h);
                 
-                if(max !== heightWeight[index]){          
-                     var clr = (nClr - index)*1.0/nClr; 
-                     // console.log(clr);
-                    app.server_list2[i]["clr"] = app.converRgbToArgb(parseInt(255*clr),0,0);  
+                console.log(max, heightWeight[index]);
+                if(max !== heightWeight[index]){       
+                    var clr = (nClr - index)*1.0/nClr; 
+
+                    var maxIndex = app.isArrayContain(heightWeight, max); 
+                    console.log(heightArr[maxIndex], h);
+                    if (heightArr[maxIndex] - h < 10)
+                        app.server_list2[i]["clr"] = app.converRgbToArgb(0,parseInt(255*clr),255);  
+                    else
+                        app.server_list2[i]["clr"] = app.converRgbToArgb(parseInt(255*clr),0,0);  
+
+                   // console.log(clr);
+                   // app.server_list2[i]["clr"] = app.converRgbToArgb(parseInt(255*clr),0,0);  
                 } 
                 else
                     app.server_list2[i]["clr"] = app.converRgbToArgb(255, 255, 255);  
@@ -312,7 +322,7 @@ var app = new Vue({
                 var strIpCur = ipServer + nCurStart.toString();
                 this.getBlockData(i, strIpCur);  
              }              
-
+ 
              var webServer = new Array(
                 "18.176.224.246",
                 "18.183.203.208", 
@@ -327,9 +337,8 @@ var app = new Vue({
                 "121.41.200.60",
                 "121.41.199.36",
                 "121.41.199.39",
-                "121.41.199.60",
                 "35.72.35.95",
-                "35.74.78.197" 
+                "35.74.78.197"  
              );
              for (j = 0; j < webServer.length; j++) {  
                 this.getBlockData(nLen+1+j, webServer[j]);  
